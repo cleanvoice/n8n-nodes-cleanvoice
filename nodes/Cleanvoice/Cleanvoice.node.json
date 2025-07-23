@@ -1,0 +1,19 @@
+{
+  "node": "n8n-nodes-cleanvoice.cleanvoice",
+  "nodeVersion": "1.0",
+  "codexVersion": "1.0",
+  "categories": ["Audio/Video", "AI", "Transform"],
+  "resources": {
+    "credentialDocumentation": [
+      {
+        "url": "https://docs.cleanvoice.ai/#authentication"
+      }
+    ],
+    "primaryDocumentation": [
+      {
+        "url": "https://docs.cleanvoice.ai"
+      }
+    ]
+  },
+  "alias": ["audio", "video", "ai", "processing", "edit"]
+}

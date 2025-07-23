@@ -1,48 +1,156 @@
-![Banner image](https://user-images.githubusercontent.com/10284570/173569848-c624317f-42b1-45a6-ab09-f0ea3c247648.png)
+# n8n-nodes-cleanvoice
 
-# n8n-nodes-starter
+This is an n8n community node. It lets you use [Cleanvoice AI](https://cleanvoice.ai) in your n8n workflows.
 
-This repo contains example nodes to help you get started building your own custom integrations for [n8n](https://n8n.io). It includes the node linter and other dependencies.
+Cleanvoice AI is an advanced audio and video processing service that removes filler words, mouth sounds, background noise, and other unwanted audio artifacts from recordings using artificial intelligence. It helps content creators, podcasters, and video producers automatically clean their audio to create more professional-sounding content.
 
-To make your custom node available to the community, you must create it as an npm package, and [submit it to the npm registry](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry).
+[n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
-If you would like your node to be available on n8n cloud you can also [submit your node for verification](https://docs.n8n.io/integrations/creating-nodes/deploy/submit-community-nodes/).
+[Installation](#installation)  
+[Operations](#operations)  
+[Credentials](#credentials)  
+[Compatibility](#compatibility)  
+[Usage](#usage)  
+[Resources](#resources)  
 
-## Prerequisites
+## Installation
 
-You need the following installed on your development machine:
+Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
 
-* [git](https://git-scm.com/downloads)
-* Node.js and npm. Minimum version Node 20. You can find instructions on how to install both using nvm (Node Version Manager) for Linux, Mac, and WSL [here](https://github.com/nvm-sh/nvm). For Windows users, refer to Microsoft's guide to [Install NodeJS on Windows](https://docs.microsoft.com/en-us/windows/dev-environment/javascript/nodejs-on-windows).
-* Install n8n with:
-  ```
-  npm install n8n -g
-  ```
-* Recommended: follow n8n's guide to [set up your development environment](https://docs.n8n.io/integrations/creating-nodes/build/node-development-environment/).
+1. Go to **Settings** > **Community Nodes**
+2. Select **Install**
+3. Enter `n8n-nodes-cleanvoice`
+4. Agree to the risks of using community nodes (if prompted)
+5. Select **Install**
 
-## Using this starter
+After installation restart n8n to register the new nodes.
 
-These are the basic steps for working with the starter. For detailed guidance on creating and publishing nodes, refer to the [documentation](https://docs.n8n.io/integrations/creating-nodes/).
+## Operations
 
-1. [Generate a new repository](https://github.com/n8n-io/n8n-nodes-starter/generate) from this template repository.
-2. Clone your new repo:
-   ```
-   git clone https://github.com/<your organization>/<your-repo-name>.git
-   ```
-3. Run `npm i` to install dependencies.
-4. Open the project in your editor.
-5. Browse the examples in `/nodes` and `/credentials`. Modify the examples, or replace them with your own nodes.
-6. Update the `package.json` to match your details.
-7. Run `npm run lint` to check for errors or `npm run lintfix` to automatically fix errors when possible.
-8. Test your node locally. Refer to [Run your node locally](https://docs.n8n.io/integrations/creating-nodes/test/run-node-locally/) for guidance.
-9. Replace this README with documentation for your node. Use the [README_TEMPLATE](README_TEMPLATE.md) to get started.
-10. Update the LICENSE file to use your details.
-11. [Publish](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry) your package to npm.
+This package contains two nodes:
 
-## More information
+### Cleanvoice AI Node
+- **Create Edit**: Submit audio or video files for AI processing to remove filler words, mouth sounds, and background noise
 
-Refer to our [documentation on creating nodes](https://docs.n8n.io/integrations/creating-nodes/) for detailed information on building your own nodes.
+### Cleanvoice AI Trigger Node  
+- **Watch Completions**: Monitors for completed edit tasks and triggers when processing is finished
+
+## Credentials
+
+To use these nodes, you need a Cleanvoice AI account and API key.
+
+### Prerequisites
+1. Sign up for a [Cleanvoice AI account](https://cleanvoice.ai)
+2. Generate an API key from your Cleanvoice dashboard
+
+### Setting up credentials in n8n
+1. Go to **Credentials** in your n8n instance
+2. Click **+ Create New**
+3. Search for "Cleanvoice AI API" and select it
+4. Enter your API key from Cleanvoice
+5. Click **Save**
+
+The credential includes a built-in test to verify your API key is working correctly.
+
+## Compatibility
+
+- Minimum n8n version: 1.0.0
+- Tested with n8n versions: 1.0.0+
+- Node API version: 1
+
+## Usage
+
+### Basic Audio Processing Workflow
+
+1. **Add the Cleanvoice AI node** to your workflow
+2. **Configure the node**:
+   - Select your Cleanvoice AI credentials
+   - Set Resource to "Edit"
+   - Set Operation to "Create"
+   - Enter the file URL of your audio/video file
+   - Choose upload type (Audio or Video)
+   - Select a processing template
+
+3. **File URL**: Can be any publicly accessible URL or use n8n's file handling capabilities
+4. **Templates**: The node dynamically loads available processing templates from your Cleanvoice account based on upload type
+
+### Example: Process Podcast Episode
+
+```json
+{
+  "nodes": [
+    {
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger"
+    },
+    {
+      "name": "Cleanvoice AI",
+      "type": "cleanvoice",
+      "parameters": {
+        "resource": "edit",
+        "operation": "create",
+        "fileUrl": "https://example.com/podcast-episode.mp3",
+        "uploadType": "single track",
+        "template": "your-template-id"
+      },
+      "credentials": {
+        "cleanvoiceApi": "your-cleanvoice-credentials"
+      }
+    }
+  ]
+}
+```
+
+### Using the Trigger Node
+
+The Cleanvoice AI Trigger node polls for completed processing tasks:
+
+1. **Add the trigger node** to start a new workflow
+2. **Configure monitoring**:
+   - Select your credentials
+   - Choose upload type to monitor
+   - Select template to filter completions
+3. **The trigger fires** when new completed edits are detected
+4. **Workflow continues** with the processed file data
+
+### Processing Different File Types
+
+**Audio Files** (upload type: "Audio"):
+- MP3, WAV, M4A, FLAC
+- Podcasts, interviews, voice recordings
+- Background music removal, filler word detection
+
+**Video Files** (upload type: "Video"):  
+- MP4, MOV, AVI
+- Video podcasts, tutorials, presentations
+- Audio track cleaning while preserving video
+
+### Output Data
+
+The node returns comprehensive information about the processing task:
+- Task ID and status
+- Download URLs for processed files
+- Processing statistics (e.g., filler words removed)
+- Timeline markers for various audio editing software
+- Transcription and summarization data (if enabled)
+
+### Error Handling
+
+The node includes proper error handling:
+- API authentication errors
+- Invalid file URLs
+- Processing failures
+- Rate limiting
+
+Enable "Continue on Fail" to handle errors gracefully in production workflows.
+
+## Resources
+
+* [n8n community nodes documentation](https://docs.n8n.io/integrations/#community-nodes)
+* [Cleanvoice AI API Documentation](https://api.cleanvoice.ai/docs)
+* [Cleanvoice AI Website](https://cleanvoice.ai)
+* [Cleanvoice AI Support](mailto:support@cleanvoice.ai)
 
 ## License
 
-[MIT](https://github.com/n8n-io/n8n-nodes-starter/blob/master/LICENSE.md)
+[MIT](LICENSE.md)
