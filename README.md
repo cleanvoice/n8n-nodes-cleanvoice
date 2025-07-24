@@ -103,15 +103,19 @@ The credential includes a built-in test to verify your API key is working correc
 
 ### Using the Trigger Node
 
-The Cleanvoice AI Trigger node polls for completed processing tasks:
+The Cleanvoice AI Trigger node monitors for completed processing tasks and fires when new tasks are detected:
 
 1. **Add the trigger node** to start a new workflow
 2. **Configure monitoring**:
    - Select your credentials
    - Choose upload type to monitor
    - Select template to filter completions
-3. **The trigger fires** when new completed edits are detected
-4. **Workflow continues** with the processed file data
+3. **Important Behavior**: The trigger only fires for tasks that are completed **after** the trigger workflow is activated. It establishes a baseline on the first run and will not trigger for tasks that were already completed before activation.
+4. **Deduplication**: The trigger maintains a list of already-processed task IDs to prevent duplicate triggers
+5. **Time Window**: Only monitors tasks from the last 7 days to keep the processed task list manageable
+6. **Workflow continues** with the processed file data when new completions are detected
+
+**Note**: When you first activate a trigger workflow, it will scan existing completed tasks to establish a baseline but will not trigger on them. Only newly completed tasks after activation will trigger the workflow.
 
 ### Processing Different File Types
 

@@ -99,9 +99,12 @@ export class CleanvoiceTrigger implements INodeType {
 	};
 
 	async poll(this: IPollFunctions): Promise<INodeExecutionData[][]> {
-		const pollData = this.getWorkflowStaticData('node');
+		const pollData = this.getWorkflowStaticData('global');
 		const template = this.getNodeParameter('template') as string;
 		const credentials = await this.getCredentials('cleanvoiceApi');
+
+		const processedKey = `cleanvoice_processed_${template}`;
+		const baselineKey = `cleanvoice_baseline_${template}`;
 
 		const options = {
 			method: 'GET' as IHttpRequestMethods,
@@ -117,49 +120,73 @@ export class CleanvoiceTrigger implements INodeType {
 
 		const response = await this.helpers.request(options);
 
-		// Handle response structure
 		let tasks: any[] = [];
 		if (response && response.tasks && Array.isArray(response.tasks)) {
 			tasks = response.tasks;
+		} else if (response && Array.isArray(response)) {
+			tasks = response;
 		}
 
-		// If no tasks, return empty
 		if (tasks.length === 0) {
 			return [[]];
 		}
 
-		// Filter valid tasks with dates
 		const validTasks = tasks.filter((task: any) => {
-			return task && task.created_at && typeof task.created_at === 'string';
+			return task && task.id && task.created_at && typeof task.created_at === 'string';
 		});
 
 		if (validTasks.length === 0) {
 			return [[]];
 		}
 
-		// Sort by created_at descending (newest first)
 		const sortedTasks = validTasks.sort((a: any, b: any) => {
 			return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
 		});
 
-		if (!pollData.lastTimeChecked) {
-			// First run - set timestamp and return latest task
-			pollData.lastTimeChecked = new Date().toISOString();
-			return [this.helpers.returnJsonArray([sortedTasks[0]])];
-		} else {
-			// Subsequent runs - check for new tasks
-			const lastTimeChecked = new Date(pollData.lastTimeChecked as string);
-			const newTasks = sortedTasks.filter((task: any) => {
-				const taskDate = new Date(task.created_at);
-				return taskDate > lastTimeChecked;
-			});
+		if (!pollData[processedKey] || !pollData[baselineKey]) {
+			pollData[processedKey] = [];
+			pollData[baselineKey] = sortedTasks[0].created_at;
 
-			if (newTasks.length > 0) {
-				pollData.lastTimeChecked = new Date().toISOString();
-				return [this.helpers.returnJsonArray(newTasks)];
-			}
+			const allCurrentTaskIds = sortedTasks.map((task: any) => task.id);
+			pollData[processedKey] = allCurrentTaskIds;
+
+			return [[]];
 		}
 
-		return [[]];
+		const baselineTimestamp = new Date(pollData[baselineKey] as string);
+
+		const cutoffTimestamp = new Date(baselineTimestamp.getTime() - (7 * 24 * 60 * 60 * 1000));
+
+		const recentTasks = sortedTasks.filter((task: any) => {
+			const taskDate = new Date(task.created_at);
+			return taskDate >= cutoffTimestamp;
+		});
+
+		const allProcessedIds = pollData[processedKey] as string[];
+
+		const validProcessedIds = allProcessedIds.filter((id: string) => {
+			return true;
+		});
+
+		const processedIds = new Set(validProcessedIds);
+
+		const newTasks = recentTasks.filter((task: any) => !processedIds.has(task.id));
+
+		if (newTasks.length === 0) {
+			return [[]];
+		}
+
+		newTasks.forEach((task: any) => {
+			processedIds.add(task.id);
+		});
+
+		const processedIdsArray = Array.from(processedIds);
+		if (processedIdsArray.length > 200) {
+			pollData[processedKey] = processedIdsArray.slice(-200);
+		} else {
+			pollData[processedKey] = processedIdsArray;
+		}
+
+		return [this.helpers.returnJsonArray(newTasks)];
 	}
 }

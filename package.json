@@ -1,5 +1,5 @@
 {
-  "name": "n8n-nodes-cleanvoice",
+  "name": "@cleanvoice/n8n-nodes-cleanvoice",
   "version": "1.0.0",
   "description": "n8n node for Cleanvoice AI audio and video processing",
   "keywords": [
