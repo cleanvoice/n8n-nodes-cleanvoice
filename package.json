@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-cleanvoice",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "n8n node for Cleanvoice AI audio and video processing",
   "keywords": [
     "n8n-community-node-package",
@@ -11,14 +11,14 @@
     "processing"
   ],
   "license": "MIT",
-  "homepage": "",
+  "homepage": "https://cleanvoice.ai",
   "author": {
     "name": "Cleanvoice",
     "email": "support@cleanvoice.ai"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/cleanvoice-ai/n8n-nodes-cleanvoice.git"
+    "url": "https://github.com/cleanvoice/n8n-nodes-cleanvoice"
   },
   "engines": {
     "node": ">=20.15"

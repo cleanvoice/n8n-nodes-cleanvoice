@@ -15,5 +15,5 @@
       }
     ]
   },
-  "alias": ["audio", "video", "ai", "processing", "watch", "completed"]
+  "alias": ["cleanvoice", "clean voice", "audio", "video", "ai", "processing", "watch", "completed", "trigger"]
 }
