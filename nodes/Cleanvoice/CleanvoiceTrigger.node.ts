@@ -24,6 +24,7 @@ export class CleanvoiceTrigger implements INodeType {
 		},
 		inputs: [],
 		outputs: [NodeConnectionType.Main],
+		usableAsTool: true,
 		credentials: [
 			{
 				name: 'cleanvoiceApi',

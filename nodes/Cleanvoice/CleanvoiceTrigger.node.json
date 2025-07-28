@@ -2,7 +2,7 @@
   "node": "n8n-nodes-cleanvoice.cleanvoiceTrigger",
   "nodeVersion": "1.0",
   "codexVersion": "1.0",
-  "categories": ["Audio/Video", "AI", "Trigger"],
+  "categories": ["Trigger"],
   "resources": {
     "credentialDocumentation": [
       {
