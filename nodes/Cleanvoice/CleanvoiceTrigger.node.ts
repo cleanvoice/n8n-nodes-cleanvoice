@@ -100,6 +100,7 @@ export class CleanvoiceTrigger implements INodeType {
 	};
 
 	async poll(this: IPollFunctions): Promise<INodeExecutionData[][]> {
+		const isManualMode = this.getMode() === 'manual';
 		const pollData = this.getWorkflowStaticData('global');
 		const template = this.getNodeParameter('template') as string;
 		const credentials = await this.getCredentials('cleanvoiceApi');
@@ -144,6 +145,12 @@ export class CleanvoiceTrigger implements INodeType {
 			return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
 		});
 
+		// In manual/test mode, return the most recent task without touching persisted state.
+		// This prevents test runs from marking tasks as processed and blocking production triggers.
+		if (isManualMode) {
+			return [this.helpers.returnJsonArray([sortedTasks[0]])];
+		}
+
 		if (!pollData[processedKey] || !pollData[baselineKey]) {
 			pollData[processedKey] = [];
 			pollData[baselineKey] = sortedTasks[0].created_at;
@@ -163,13 +170,7 @@ export class CleanvoiceTrigger implements INodeType {
 			return taskDate >= cutoffTimestamp;
 		});
 
-		const allProcessedIds = pollData[processedKey] as string[];
-
-		const validProcessedIds = allProcessedIds.filter((id: string) => {
-			return true;
-		});
-
-		const processedIds = new Set(validProcessedIds);
+		const processedIds = new Set(pollData[processedKey] as string[]);
 
 		const newTasks = recentTasks.filter((task: any) => !processedIds.has(task.id));
 
