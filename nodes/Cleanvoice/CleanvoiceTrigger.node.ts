@@ -100,7 +100,7 @@ export class CleanvoiceTrigger implements INodeType {
 	};
 
 	async poll(this: IPollFunctions): Promise<INodeExecutionData[][]> {
-		const isManualMode = this.getMode() === 'manual';
+		const isManualMode = this.getMode() === 'manual' || this.getActivationMode() === 'manual';
 		const pollData = this.getWorkflowStaticData('global');
 		const template = this.getNodeParameter('template') as string;
 		const credentials = await this.getCredentials('cleanvoiceApi');
