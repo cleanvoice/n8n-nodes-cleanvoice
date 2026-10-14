@@ -16,11 +16,19 @@ export class CleanvoiceApi implements ICredentialType {
 			default: '',
 			description: 'The API key for your Cleanvoice AI account',
 		},
+		{
+			displayName: 'API Base URL',
+			name: 'baseUrl',
+			type: 'string',
+			default: 'https://api.cleanvoice.ai/v2',
+			description:
+				'Cleanvoice API base URL. Keep the default for production; override only for a test or staging environment.',
+		},
 	];
 
 	test: ICredentialTestRequest = {
 		request: {
-			baseURL: 'https://api.cleanvoice.ai/v2',
+			baseURL: '={{$credentials.baseUrl}}',
 			url: '/configurations',
 			method: 'GET',
 			headers: {

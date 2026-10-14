@@ -19,7 +19,7 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 
 1. Go to **Settings** > **Community Nodes**
 2. Select **Install**
-3. Enter `n8n-nodes-cleanvoice`
+3. Enter `@cleanvoice/n8n-nodes-cleanvoice`
 4. Agree to the risks of using community nodes (if prompted)
 5. Select **Install**
 
@@ -51,6 +51,10 @@ To use these nodes, you need a Cleanvoice AI account and API key.
 5. Click **Save**
 
 The credential includes a built-in test to verify your API key is working correctly.
+
+### API Base URL (environments)
+
+The credential has an optional **API Base URL** field defaulting to `https://api.cleanvoice.ai/v2` (production). Existing credentials keep working unchanged. Point it at a test or staging API base URL when one is available to run the same workflows against a non-production environment.
 
 ## Compatibility
 
@@ -111,7 +115,7 @@ The Cleanvoice AI Trigger node monitors for completed processing tasks and fires
    - Choose upload type to monitor
    - Select template to filter completions
 3. **Important Behavior**: The trigger only fires for tasks that are completed **after** the trigger workflow is activated. It establishes a baseline on the first run and will not trigger for tasks that were already completed before activation.
-4. **Deduplication**: The trigger maintains a list of already-processed task IDs to prevent duplicate triggers
+4. **Deduplication**: The trigger maintains a list of already-processed task IDs to prevent duplicate triggers. Deduplication is per task ID, not per file — a re-uploaded file produces a new task and will trigger again.
 5. **Time Window**: Only monitors tasks from the last 7 days to keep the processed task list manageable
 6. **Workflow continues** with the processed file data when new completions are detected
 
@@ -124,10 +128,23 @@ The Cleanvoice AI Trigger node monitors for completed processing tasks and fires
 - Podcasts, interviews, voice recordings
 - Background music removal, filler word detection
 
+**Multitrack** (upload type: "Multitrack"):
+- Stems and multi-track sessions
+- Automixing and per-track processing templates (e.g. "Merge", "automixer and noise")
+
 **Video Files** (upload type: "Video"):  
 - MP4, MOV, AVI
 - Video podcasts, tutorials, presentations
 - Audio track cleaning while preserving video
+
+### Multiple Files
+
+File URL accepts a single URL. To process several files in one run, emit one item per URL from an upstream node (Code, Set, or a source node) and set File URL to an expression such as `={{ $json.url }}` — the node executes once per item and creates one edit task per file.
+
+### Test vs. Production Mode
+
+- **Test mode** (Execute workflow / Fetch test event in the editor): the trigger returns the newest completed task and does not write workflow state. Manual test runs are repeatable and never affect production deduplication.
+- **Production** (published/active workflow): the trigger polls on schedule. On first activation it marks all currently listed tasks as processed (baseline) and afterwards emits each new task exactly once. Deduplication is per task ID — re-uploading the same source file creates a new task and will trigger again.
 
 ### Output Data
 

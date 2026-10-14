@@ -10,6 +10,8 @@ import type {
 
 import { NodeConnectionType } from 'n8n-workflow';
 
+import { getApiBaseUrl } from './GenericFunctions';
+
 export class CleanvoiceTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Cleanvoice AI Trigger',
@@ -44,6 +46,10 @@ export class CleanvoiceTrigger implements INodeType {
 						value: 'single track',
 					},
 					{
+						name: 'Multitrack',
+						value: 'multitrack',
+					},
+					{
 						name: 'Video',
 						value: 'video',
 					},
@@ -71,10 +77,11 @@ export class CleanvoiceTrigger implements INodeType {
 			async getTemplates(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				const uploadType = this.getCurrentNodeParameter('uploadType') as string;
 				const credentials = await this.getCredentials('cleanvoiceApi');
+				const baseUrl = getApiBaseUrl(credentials);
 
 				const options = {
 					method: 'GET' as IHttpRequestMethods,
-					uri: 'https://api.cleanvoice.ai/v2/configurations',
+					uri: `${baseUrl}/configurations`,
 					headers: {
 						'X-API-KEY': credentials.apiKey,
 					},
@@ -104,13 +111,14 @@ export class CleanvoiceTrigger implements INodeType {
 		const pollData = this.getWorkflowStaticData('global');
 		const template = this.getNodeParameter('template') as string;
 		const credentials = await this.getCredentials('cleanvoiceApi');
+		const baseUrl = getApiBaseUrl(credentials);
 
 		const processedKey = `cleanvoice_processed_${template}`;
 		const baselineKey = `cleanvoice_baseline_${template}`;
 
 		const options = {
 			method: 'GET' as IHttpRequestMethods,
-			uri: `https://api.cleanvoice.ai/v2/completed_tasks/${template}`,
+			uri: `${baseUrl}/completed_tasks/${template}`,
 			headers: {
 				'X-API-KEY': credentials.apiKey,
 			},

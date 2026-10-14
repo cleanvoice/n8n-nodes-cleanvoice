@@ -10,6 +10,8 @@ import type {
 
 import { NodeConnectionType } from 'n8n-workflow';
 
+import { getApiBaseUrl } from './GenericFunctions';
+
 export class Cleanvoice implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Cleanvoice AI',
@@ -97,6 +99,10 @@ export class Cleanvoice implements INodeType {
 						value: 'single track',
 					},
 					{
+						name: 'Multitrack',
+						value: 'multitrack',
+					},
+					{
 						name: 'Video',
 						value: 'video',
 					},
@@ -130,10 +136,11 @@ export class Cleanvoice implements INodeType {
 			async getTemplates(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				const uploadType = this.getCurrentNodeParameter('uploadType') as string;
 				const credentials = await this.getCredentials('cleanvoiceApi');
+				const baseUrl = getApiBaseUrl(credentials);
 
 				const options = {
 					method: 'GET' as IHttpRequestMethods,
-					uri: 'https://api.cleanvoice.ai/v2/configurations',
+					uri: `${baseUrl}/configurations`,
 					headers: {
 						'X-API-KEY': credentials.apiKey,
 					},
@@ -167,6 +174,7 @@ export class Cleanvoice implements INodeType {
 		const returnData: INodeExecutionData[] = [];
 
 		const credentials = await this.getCredentials('cleanvoiceApi');
+		const baseUrl = getApiBaseUrl(credentials);
 
 		for (let i = 0; i < items.length; i++) {
 			try {
@@ -187,7 +195,7 @@ export class Cleanvoice implements INodeType {
 
 					const options = {
 						method: 'POST' as IHttpRequestMethods,
-						uri: 'https://api.cleanvoice.ai/v2/edits',
+						uri: `${baseUrl}/edits`,
 						headers: {
 							'X-API-KEY': credentials.apiKey,
 							'Content-Type': 'application/json',
